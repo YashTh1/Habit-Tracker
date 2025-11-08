@@ -288,30 +288,70 @@ class DailyRoutineTracker {
         }
     }
     
-    render() {
-        const app = document.getElementById('app');
-        if (!app) {
-            console.error('❌ App container not found');
-            return;
-        }
-        
-        try {
-            app.innerHTML = this.renderHeader() + this.renderTabs() + this.renderContent();
-            this.updateTimeDisplay();
-            
-            if (this.state.activeTab === 'analytics') {
-                setTimeout(() => {
-                    this.analyticsManager.renderCharts();
-                }, 100);
-            }
-            
-            console.log('🔄 App rendered successfully');
-        } catch (error) {
-            console.error('❌ Error rendering app:', error);
-            this.showErrorState();
-        }
+    // app.js में render method में थोड़ा सा change
+render() {
+    const app = document.getElementById('app');
+    if (!app) {
+        console.error('❌ App container not found');
+        return;
     }
     
+    try {
+        app.innerHTML = this.renderHeader() + this.renderTabs() + this.renderContent();
+        this.updateTimeDisplay();
+        
+        // Mobile के लिए scroll hint add करें
+        if (this.isMobile && this.state.activeTab === 'tracker' && this.state.tasks.length > 0) {
+            this.addMobileScrollHint();
+        }
+        
+        if (this.state.activeTab === 'analytics') {
+            setTimeout(() => {
+                this.analyticsManager.renderCharts();
+            }, 100);
+        }
+        
+        console.log('🔄 App rendered successfully');
+    } catch (error) {
+        console.error('❌ Error rendering app:', error);
+        this.showErrorState();
+    }
+}
+
+// New method for mobile scroll hint
+addMobileScrollHint() {
+    const tableContainer = document.querySelector('.table-container.mobile-scrollable');
+    if (tableContainer) {
+        // Auto-scroll to today's date on mobile
+        setTimeout(() => {
+            this.scrollToToday();
+        }, 500);
+    }
+}
+
+// Today's date पर auto-scroll करें
+scrollToToday() {
+    if (!this.isMobile) return;
+    
+    const tableContainer = document.querySelector('.table-container.mobile-scrollable');
+    if (!tableContainer) return;
+    
+    const today = new Date();
+    const currentMonth = this.state.currentMonth;
+    
+    if (today.getMonth() === currentMonth.getMonth() && 
+        today.getFullYear() === currentMonth.getFullYear()) {
+        
+        const day = today.getDate();
+        const dayElement = document.querySelector(`th.day-header:nth-child(${day + 1})`);
+        
+        if (dayElement) {
+            const scrollPosition = dayElement.offsetLeft - 100; // थोड़ा left margin
+            tableContainer.scrollLeft = Math.max(0, scrollPosition);
+        }
+    }
+}
+
     renderHeader() {
         const monthName = this.state.currentMonth.toLocaleDateString('en-US', {
             month: 'long',
