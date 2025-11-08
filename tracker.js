@@ -1,4 +1,3 @@
-// Tracker functionality
 class TrackerManager {
     constructor(app) {
         this.app = app;
@@ -10,15 +9,16 @@ class TrackerManager {
         if (tasks.length === 0) {
             return this.renderEmptyState();
         }
-        
-        const maxDaysToShow = this.getMaxDaysToShow();
+    
+        const maxDaysToShow = this.app.isMobile ? TrackerUtils.getDaysInMonth(currentMonth) : this.getMaxDaysToShow();
         
         return `
             <div class="card">
                 <div class="card-header">
                     <h2>TASKS TRACKER</h2>
+                    ${this.app.isMobile ? '<div style="font-size: 12px; margin-top: 5px; color: var(--text-secondary);">← Scroll sideways to see more dates →</div>' : ''}
                 </div>
-                <div class="table-container">
+                <div class="table-container ${this.app.isMobile ? 'mobile-scrollable' : ''}">
                     <table>
                         <thead>
                             <tr>
@@ -129,6 +129,10 @@ class TrackerManager {
         const { currentMonth } = this.app.state;
         const daysInMonth = TrackerUtils.getDaysInMonth(currentMonth);
         const width = this.app.windowWidth;
+        
+        if (this.app.isMobile) {
+            return daysInMonth; 
+        }
         
         if (width < 640) return 7;
         if (width < 768) return 10;
